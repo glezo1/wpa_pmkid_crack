@@ -166,7 +166,7 @@ if(__name__=='__main__'):
         # copy the pmkid whole hash to the -f file
         with open(tmp_file,'w') as fd_hash_file:
             fd_hash_file.write(whole_hash)
-        print('TODO! pendiente invocar a hashcat tal que:')
+        print('TODO! call hashcat such as:')
         print('hashcat -m 16800 '+tmp_file+' <dictionary_file>|<mask>')
         pass        
             
