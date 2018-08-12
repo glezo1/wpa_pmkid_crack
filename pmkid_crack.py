@@ -1,23 +1,15 @@
 
-import pip
 import sys
 import subprocess
 import binascii
 import time
 import datetime
-
-required_python_modules =   ['argparse','pexpect','netifaces']
-for current_module in required_python_modules:
-    try:
-        __import__(current_module)
-    except ImportError as e:
-        pip.main(['install',e.name])
-    except Exception as e:
-        print(e)
-import argparse
-import pexpect
-import netifaces
-
+try:    import argparse
+except: print('argparse require, run: pip install pygame');     sys.exit(1)
+try:    import pexpect
+except: print('pexpect require, run: pip install pygame');      sys.exit(1)
+try:    import netifaces
+except: print('netifaces require, run: pip install pygame');    sys.exit(1)
 
 
 #----------------------------------------------------------------------------------
@@ -44,27 +36,27 @@ def print_usage():
     result  +=  "    2.0"+"\n"
     result  +=  "    v4.2.1-4-g188a956"+"\n"
     result  +=  "    pull/1273/head"+"\n"
-    result  +=  "etc, so be sure your version is >= 4.2.0"+"\n"
+    result  +=  "    etc, so be sure your version is >= 4.2.0"+"\n"
     
     print(result)
 #-----------------------------------------------------------------------------------
 if(__name__=='__main__'):
-    current_version =   '0.1'
+    current_version =   '0.1.1'
     
     
     unspecified     =   object()
     argument_parser =   argparse.ArgumentParser(usage=None,add_help=False)
-    argument_parser.add_argument('-h'  , '--help'       ,action='store_true'   ,default=False                   ,dest='help'       ,required=False  )
-    argument_parser.add_argument('-v'  , '--version'    ,action='store_true'   ,default=False                   ,dest='version'    ,required=False  )
-    argument_parser.add_argument('-i'  , '--interface'  ,action='store'        ,default=None                    ,dest='iface'      ,required=True   )
-    argument_parser.add_argument('-b'  , '--bssid'      ,action='store'        ,default=None                    ,dest='bssid'      ,required=True   )
-    argument_parser.add_argument('-e'  , '--essid'      ,action='store'        ,default=None                    ,dest='essid'      ,required=True   )
-    argument_parser.add_argument('-t'  , '--time'       ,action='store'        ,default=30                      ,dest='max_time'   ,required=False  )
-    argument_parser.add_argument('-c'  , '--crack'      ,action='store_true'   ,default=None                    ,dest='crack'      ,required=False  )
-    argument_parser.add_argument('-d'  , '--dictionary' ,action='store'        ,default=None                    ,dest='dictionary' ,required=False  )
-    argument_parser.add_argument('-f'  , '--file'       ,action='store'        ,default='./wpa_passphrase.cnf'  ,dest='file'       ,required=False  )
-    argument_parser.add_argument('-m'  , '--mask'       ,action='store'        ,default=None                    ,dest='mask'       ,required=False  )
-    argument_parser.add_argument('-p'  , '--password'   ,action='store'        ,default='spameggs'              ,dest='password'   ,required=False  )
+    argument_parser.add_argument('-h','--help'      ,action='store_true',default=False                 ,dest='help'      ,required=False  )
+    argument_parser.add_argument('-v','--version'   ,action='store_true',default=False                 ,dest='version'   ,required=False  )
+    argument_parser.add_argument('-i','--interface' ,action='store'     ,default=None                  ,dest='iface'     ,required=False  )
+    argument_parser.add_argument('-b','--bssid'     ,action='store'     ,default=None                  ,dest='bssid'     ,required=False  )
+    argument_parser.add_argument('-e','--essid'     ,action='store'     ,default=None                  ,dest='essid'     ,required=False  )
+    argument_parser.add_argument('-t','--time'      ,action='store'     ,default=30                    ,dest='max_time'  ,required=False  )
+    argument_parser.add_argument('-c','--crack'     ,action='store_true',default=None                  ,dest='crack'     ,required=False  )
+    argument_parser.add_argument('-d','--dictionary',action='store'     ,default=None                  ,dest='dictionary',required=False  )
+    argument_parser.add_argument('-f','--file'      ,action='store'     ,default='./wpa_passphrase.cnf',dest='file'      ,required=False  )
+    argument_parser.add_argument('-m','--mask'      ,action='store'     ,default=None                  ,dest='mask'      ,required=False  )
+    argument_parser.add_argument('-p','--password'  ,action='store'     ,default='spameggs'            ,dest='password'  ,required=False  )
     
     
     argument_parser_result      =   argument_parser.parse_args()
@@ -87,10 +79,16 @@ if(__name__=='__main__'):
     elif(option_help):
         print_usage()
         sys.exit(0)
-    elif(crack==True and ( (password_dictionary_file==None and password_mask==None) or (password_dictionary_file!=None and password_mask!=None) )  ):
-        print_usage()
-        print('If -c is specified, -d XOR -m must be specified as well')
-        sys.exit(0)
+    else:
+        # by all means, setting ALL args to required=False is not the best course of action... but... well...
+        if(iface==None or bssid==None or essid==None):
+            print_usage()
+            print('-i|--interface , -b|--bssid and -e|--essid are mandatory')
+            sys.exit(1)
+        if(crack==True and ( (password_dictionary_file==None and password_mask==None) or (password_dictionary_file!=None and password_mask!=None) )  ):
+            print_usage()
+            print('If -c|--crack is specified, -d|--dictionary XOR -m|--mask must be specified as well')
+            sys.exit(1)
     
     
     bssid_hex           =   bssid.replace(':','').upper()
@@ -109,12 +107,10 @@ if(__name__=='__main__'):
     try:    subprocess.check_output(parameter_list_string,shell=True)   # shel=True ===> arg must be string, not list
     except: pass
 
-
     time_pmkid_start        =   None
     time_pmkid_end          =   None
     time_hashcat_start      =   None
     time_hashcat_end        =   None
-
     
     # 2) call wpa_supplicant to retrieve the PMKID
     time_pmkid_start        =   time.time()
@@ -162,13 +158,13 @@ if(__name__=='__main__'):
     
     if(pmkid_found==False or crack==None):
         print(datetime.datetime.strftime(datetime.datetime.now(),'%Y-%m-%d %H:%M:%S')+' DONE!')
+        sys.exit(0)
     else:
         # copy the pmkid whole hash to the -f file
         with open(tmp_file,'w') as fd_hash_file:
             fd_hash_file.write(whole_hash)
-        print('TODO! call hashcat such as:')
+        print('TODO! should call hashcat such as')
         print('hashcat -m 16800 '+tmp_file+' <dictionary_file>|<mask>')
-        pass        
-            
+           
+        print(datetime.datetime.strftime(datetime.datetime.now(),'%Y-%m-%d %H:%M:%S')+' DONE!')
 
-    print(datetime.datetime.strftime(datetime.datetime.now(),'%Y-%m-%d %H:%M:%S')+' DONE!')
