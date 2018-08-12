@@ -5,11 +5,11 @@ import binascii
 import time
 import datetime
 try:    import argparse
-except: print('argparse require, run: pip install pygame');     sys.exit(1)
+except: print('argparse required, run: pip install pygame');     sys.exit(1)
 try:    import pexpect
-except: print('pexpect require, run: pip install pygame');      sys.exit(1)
+except: print('pexpect required, run: pip install pygame');      sys.exit(1)
 try:    import netifaces
-except: print('netifaces require, run: pip install pygame');    sys.exit(1)
+except: print('netifaces required, run: pip install pygame');    sys.exit(1)
 
 
 #----------------------------------------------------------------------------------
